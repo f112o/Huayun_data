@@ -1,0 +1,10 @@
+<!doctype html>
+    <title>上传 JSON 文件夹和 Excel 表</title>
+    <h1>上传包含 JSON 文件的文件夹（ZIP 格式）和 Excel 表</h1>
+    <form method=post enctype=multipart/form-data action="/upload-json-folder">
+        <label for="zip-file">选择 ZIP 文件：</label>
+        <input type="file" id="zip-file" name="zip_file" required><br><br>
+        <label for="excel-file">选择 Excel 文件：</label>
+        <input type="file" id="excel-file" name="excel_file" required><br><br>
+        <input type="submit" value="上传">
+    </form>
