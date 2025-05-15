@@ -37,7 +37,7 @@
             <button id="closeExportModal">关闭</button>
         </div>
     </div>
-
+    
     <!-- 隐藏的反馈弹窗 -->
     <div id="feedbackModal" class="animate__animated"  style="display: none; position: fixed; top: 30%; left: 30%; background-color: #d9ebdc; padding: 20px; border: 1px solid #ccc;">
         <label>文件名:</label>
@@ -56,6 +56,10 @@
         <iframe id="pdfIframe" src=""></iframe>
     </div>
 
+    <div id="problemSidebar">
+        <div id="problemListTitle">当前文件问题</div>
+        <div id="problemList"></div>
+    </div>
     <script src="{{ url_for('static', filename='js/view_pdf.js') }}"></script>
 </body>
 </html>

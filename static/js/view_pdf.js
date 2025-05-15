@@ -94,7 +94,7 @@ if (match[0][1] !== '/') {
         fetch('/feedback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ filename: filename, problem: `标签未正确闭合！` })
+            body: JSON.stringify({ filename: filename, problem: `标签<${tag}>缺失起始标签或标签 <${stack[stack.length - 1]}>缺失结束标签` })
         });
         return false;
     }
@@ -106,7 +106,7 @@ alert(`标签 <${stack[stack.length - 1]}> 未闭合！`);
 fetch('/feedback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ filename: filename, problem: `标签未正确闭合！` })
+            body: JSON.stringify({ filename: filename, problem: `标签 <${stack[stack.length - 1]}>缺失结束标签！` })
         });
 return false;
 }
@@ -262,6 +262,15 @@ document.getElementById('closeExportModal').addEventListener('click', () => {
     document.getElementById('exportModal').style.display = 'none';
 });
 
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function renderFeedbackTable(entries) {
     if (!entries || entries.length === 0) {
         return '<p>暂无反馈内容</p>';
@@ -269,8 +278,8 @@ function renderFeedbackTable(entries) {
     let html = '<table style="width:100%; border-collapse: collapse;"><thead><tr><th style="border:1px solid #999; padding:5px;">文件名</th><th style="border:1px solid #999; padding:5px;">问题描述</th><th>操作</th></tr></thead><tbody>';
     entries.forEach(item => {
         html += `<tr>
-            <td style="border:1px solid #999; padding:5px;">${item.filename || ''}</td>
-            <td style="border:1px solid #999; padding:5px;">${item.problem || ''}</td>
+            <td style="border:1px solid #999; padding:5px;">${escapeHtml(item.filename || '')}</td>
+            <td style="border:1px solid #999; padding:5px;">${escapeHtml(item.problem || '')}</td>
             <td><button class="delete-feedback-btn" data-filename="${encodeURIComponent(item.filename)}" data-problem="${encodeURIComponent(item.problem)}">删除</button></td>
         </tr>`;
     });
@@ -315,3 +324,18 @@ function updateNextButton() {
     }
 }
 
+function loadCurrentFileProblems() {
+    const filename = jsonFiles && jsonFiles.length > 0 ? jsonFiles[currentIndex] : '';
+    fetch(`/get-problems/${filename}`)
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('problemList');
+            if (data && data.length > 0) {
+                list.innerHTML = data.map(item => `<div style="margin-bottom:8px;">• ${escapeHtml(item)}</div>`).join('');
+            } else {
+                list.innerHTML = '<div style="color:#aaa;">暂无问题</div>';
+            }
+        });
+}
+// 鼠标移入时加载
+document.getElementById('problemSidebar').addEventListener('mouseenter', loadCurrentFileProblems);

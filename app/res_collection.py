@@ -60,6 +60,7 @@ def download_feedback():
 @res_bp.route('/feedback', methods=['POST'])
 def feedback():
     data = request.json
+    print(data)
     filename = data.get('filename')
     problem = data.get('problem')
     feedback_file = os.path.join(current_app.config['DATA_FOLDER'], 'feedback.xlsx')
@@ -83,3 +84,22 @@ def feedback():
         ws.append([filename, problem])
         wb.save(feedback_file)
     return jsonify({"message": "反馈已提交"})
+
+@res_bp.route('/get-problems/<filename>', methods=['GET'])
+def get_problems(filename):
+    """
+    根据文件名返回该文件所有反馈问题（只返回问题描述列表）
+    """
+    feedback_file = os.path.join(current_app.config['DATA_FOLDER'], 'feedback.xlsx')
+    if not os.path.exists(feedback_file):
+        return jsonify([])
+
+    wb = openpyxl.load_workbook(feedback_file)
+    ws = wb.active
+    problems = []
+    # 跳过标题行
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        row_filename, problem = row
+        if str(row_filename) == str(filename):
+            problems.append(problem)
+    return jsonify(problems)
