@@ -72,6 +72,14 @@ def feedback():
             wb.save(feedback_file)
         wb = openpyxl.load_workbook(feedback_file)
         ws = wb.active
+        # 检查是否已存在相同的反馈
+        exists = False
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if str(row[0]) == str(filename) and str(row[1]) == str(problem):
+                exists = True
+                break
+        if exists:
+            return jsonify({"message": "该反馈已存在，无需重复提交"})
         ws.append([filename, problem])
         wb.save(feedback_file)
     return jsonify({"message": "反馈已提交"})

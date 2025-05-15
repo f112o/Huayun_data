@@ -1,5 +1,5 @@
 data/
-static/
+pdf/
 __pycache__/
 .idea/
 *.pyc
