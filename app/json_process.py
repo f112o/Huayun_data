@@ -78,27 +78,45 @@ def get_json(filename):
                 to_return = {}
                 data = content['content']
                 num_tokens = calculate_tokens(data)
-                print(f"文件 {filename} 的 token 数量: {num_tokens}")
+                data = fix_latex_slash(data)
+                #print(f"文件 {filename} 的 token 数量: {num_tokens}")
                 to_return['num_tokens'] = num_tokens
-                # 定义递归处理函数
-                def highlight_tags(obj):
-                    if isinstance(obj, str):
-                        # 匹配 <...>，并加粗蓝色
-                        return re.sub(r'(<[^<>]+>)', r'<b style="color:blue;">\1</b>', obj)
-                    elif isinstance(obj, list):
-                        return [highlight_tags(item) for item in obj]
-                    elif isinstance(obj, dict):
-                        return {k: highlight_tags(v) for k, v in obj.items()}
-                    else:
-                        return obj
-
-                data = highlight_tags(data)
+                #print(repr(data))
                 to_return['content'] = data
                 
             return jsonify(to_return)
         except Exception as e:
             return jsonify({"error": str(e)}), 500
     return jsonify({"error": "文件未找到"}), 404
+# @json_bp.route('/get-json/<filename>')
+# def get_json(filename):
+#     """获取指定 JSON 文件的内容，保留原始转义"""
+#     import re
+#     json_path = os.path.join('data', 'True1', filename)
+#     if os.path.exists(json_path):
+#         try:
+#             with open(json_path, 'r', encoding='utf-8') as f:
+#                 raw = f.read()
+#                 # 用正则提取 content 字段的原始字符串
+#                 match = re.search(r'"content"\s*:\s*"((?:[^"\\]|\\.)*)"', raw)
+#                 if match:
+#                     content_raw = match.group(1)
+#                     # 将所有转义还原为原始字符串（如 \\n -> \n），但 LaTeX 相关的 \\ 保留
+#                     # 这里不做 decode，直接传递原始字符串给前端
+#                     data = fix_latex_slash(content_raw)
+#                     num_tokens = calculate_tokens(data)
+#                     to_return = {
+#                         'num_tokens': num_tokens,
+#                         'content': data
+#                     }
+#                     return jsonify(to_return)
+#                 else:
+#                     return jsonify({"error": "content 字段未找到"}), 400
+#         except Exception as e:
+#             return jsonify({"error": str(e)}), 500
+#     return jsonify({"error": "文件未找到"}), 404
+    
+
 @json_bp.route('/get-folders')
 def get_folders():
     """获取文件夹名称"""

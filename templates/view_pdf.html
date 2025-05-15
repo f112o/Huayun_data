@@ -101,6 +101,9 @@
             cursor: pointer;
         }
     </style>
+   
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 </head>
 <body>
     <div class="sidebar">
@@ -154,7 +157,7 @@
         let jsonFiles = [];
         let currentIndex = 0;
 
-        // 加载“文件夹”下拉菜单
+        // 加载"文件夹"下拉菜单
         fetch('/get-folders')
             .then(response => response.json())
             .then(folders => {
@@ -228,6 +231,51 @@
 
         /* ==================== JSON 相关函数 ==================== */
 
+function checkTagClosed(str) {
+    // 匹配所有 <标签> 和 </标签>
+    const tagRegex = /<\/?([\u4e00-\u9fa5a-zA-Z0-9]+)>/g;
+    let stack = [];
+    let match;
+    while ((match = tagRegex.exec(str)) !== null) {
+        const tag = match[1];
+        if (match[0][1] !== '/') {
+            // 开始标签
+            stack.push(tag);
+        } else {
+            // 结束标签
+            if (stack.length === 0 || stack[stack.length - 1] !== tag) {
+                alert(`标签 <${tag}> 未正确闭合！\n当前栈：${stack.join(' > ')}`);
+                return false;
+            }
+            stack.pop();
+        }
+    }
+    if (stack.length > 0) {
+        alert(`标签 <${stack[stack.length - 1]}> 未闭合！`);
+        return false;
+    }
+    return true;
+}
+
+// 在 renderWithLineBreaks 前调用
+function renderWithLineBreaks(str) {
+    checkTagClosed(str);
+    console.log('原文:', str);
+    // 只转义和高亮 <> 里含有中文的标签
+    // str = str.replace(/https:\/\/minio-file\.hwzxs\.com\/[^\s\n]+/g, function(url) {
+    //     return '![](' + url + ')';
+    // });
+    str = str.replace(/(<\/?[\u4e00-\u9fa5]+>)/g, function(m) {
+        // 转义 < 和 >
+        return '<span style="color:blue;">' + m.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+    });
+    str = str.replace(/https:\/\/minio-file\.hwzxs\.com\/[^\s\]\)]+/g, function(url) {
+        return `<img src="${url}" style="max-width:100%;">`;
+    });
+    str = str.replace(/\n/g, '<br>');
+
+    return str;
+}
         function loadJsonFile(index) {
             if (index >= 0 && index < jsonFiles.length) {
                 const filename = jsonFiles[index];
@@ -236,13 +284,19 @@
                     .then(data => {
                         const jsonContent = document.getElementById('jsonContent');
                         const tokenInfo = document.getElementById('tokenInfo');
-
-                        jsonContent.innerHTML = renderJsonAsHtml(data.content);
-                        jsonContent.scrollTop = 0;
+                        
+                        if (typeof data.content === 'string') {
+                            jsonContent.innerHTML = `<div style="font-family:monospace;">${renderWithLineBreaks(data.content)}</div>`;
+                            // 确保 MathJax 重新渲染
+                            if (window.MathJax) {
+                                MathJax.typesetPromise([jsonContent]).catch((err) => console.log('MathJax error:', err));
+                            }
+                        } else {
+                            // ... 其他代码 ...
+                        }
+                        
                         if (data.num_tokens !== undefined) {
                             tokenInfo.textContent = `Token 数量: ${data.num_tokens}`;
-                        } else {
-                            tokenInfo.textContent = 'Token 数量: 未知';
                         }
                         updateNextButton();
                     })
@@ -315,7 +369,7 @@
             document.getElementById('feedbackProblem').value = '';
         });
 
-        // 点击“导出”按钮：显示弹窗并获取反馈数据
+        // 点击"导出"按钮：显示弹窗并获取反馈数据
         document.getElementById('exportButton').addEventListener('click', () => {
             const exportModal = document.getElementById('exportModal');
             exportModal.style.display = 'block';
@@ -329,7 +383,7 @@
                 .catch(err => console.error(err));
         });
 
-        // “下载”按钮 -> 打开 /download-feedback
+        // "下载"按钮 -> 打开 /download-feedback
         document.getElementById('downloadFeedback').addEventListener('click', () => {
             window.location.href = '/download-feedback';
         });

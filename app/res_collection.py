@@ -15,7 +15,7 @@ def delete_feedback():
         problem = ''
     else:
         problem = str(problem).strip()
-    feedback_file = os.path.join(app.config['DATA_FOLDER'], 'feedback.xlsx')
+    feedback_file = os.path.join(current_app.config['DATA_FOLDER'], 'feedback.xlsx')
     if not os.path.exists(feedback_file):
         return jsonify({"success": False, "msg": "文件不存在"})
 

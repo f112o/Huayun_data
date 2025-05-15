@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Huayun_data
 =======
 # 数据校验工具
@@ -91,4 +90,4 @@
 - 注意文件访问权限的设置
 
 
->>>>>>> origin/master
+![](https://minio-file.hwzxs.com/data-overnance/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202025-03-28%20201518.png)
