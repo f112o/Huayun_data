@@ -166,7 +166,7 @@ if (index >= 0 && index < jsonFiles.length) {
 } else {
     jsonContent.classList.remove('fade-out');
 }
-}, 400);
+}, 300);
 }
 
 function renderJsonAsHtml(data) {
@@ -217,7 +217,7 @@ document.getElementById('feedbackCancel').addEventListener('click', () => {
     const modal = document.getElementById('feedbackModal');
     modal.classList.remove('animate__fadeIn');
     modal.classList.add('animate__fadeOut');
-    setTimeout(() => { modal.style.display = 'none'; }, 500);
+    setTimeout(() => { modal.style.display = 'none'; }, 200);
 });
 
 // 提交反馈
@@ -314,3 +314,4 @@ function updateNextButton() {
         nextButton.textContent = '下一个 JSON';
     }
 }
+
