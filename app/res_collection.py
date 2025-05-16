@@ -51,10 +51,41 @@ def get_feedback_entries():
 
 @res_bp.route('/download-feedback', methods=['GET'])
 def download_feedback():
-    """提供 feedback.xlsx 的下载"""
+    """提供 feedback.xlsx 的下载，导出时同一文件名的所有问题合并为一行，未查看的文件注明"""
     feedback_file = os.path.join(current_app.config['DATA_FOLDER'], 'feedback.xlsx')
+    wb = openpyxl.load_workbook(feedback_file)
+    ws = wb.active
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.append(['文件名', '问题描述'])
+
+    # 收集所有反馈问题
+    file_problems = {}
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        filename, problem = row
+        if filename is None:
+            continue
+        if filename not in file_problems:
+            file_problems[filename] = []
+        if problem:
+            file_problems[filename].append(str(problem))
+
+    # 获取True1文件夹下所有json文件名
+    true1_folder = os.path.join(current_app.config['DATA_FOLDER'], 'True1')
+    all_json_files = [f for f in os.listdir(true1_folder) if f.endswith('.json')]
+
+    # 合并并写入新表
+    for filename in all_json_files:
+        if filename in file_problems:
+            worksheet.append([filename, "\n".join(file_problems[filename])])
+        else:
+            worksheet.append([filename, "未查看"])
+
+    # 保存到临时文件
+    temp_file = os.path.join(current_app.config['DATA_FOLDER'], 'feedback_temp.xlsx')
+    workbook.save(temp_file)
     if os.path.exists(feedback_file):
-        return send_file(feedback_file, as_attachment=True)
+        return send_file(temp_file, as_attachment=True)
     return jsonify({"error": "尚未生成反馈文件"}), 404
 
 @res_bp.route('/feedback', methods=['POST'])
@@ -97,9 +128,11 @@ def get_problems(filename):
     wb = openpyxl.load_workbook(feedback_file)
     ws = wb.active
     problems = []
+    print('前端请求的 filename:', repr(filename))
     # 跳过标题行
     for row in ws.iter_rows(min_row=2, values_only=True):
         row_filename, problem = row
         if str(row_filename) == str(filename):
             problems.append(problem)
+    print('最终返回:', problems)
     return jsonify(problems)

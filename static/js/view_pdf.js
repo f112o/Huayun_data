@@ -193,8 +193,23 @@ document.getElementById('prevButton').addEventListener('click', function () {
     }
 });
 
-document.getElementById('nextButton').addEventListener('click', function () {
+async function hasFeedback(filename) {
+    const res = await fetch('/get-feedback-entries');
+    const data = await res.json();
+    return (data.entries || []).some(item => item.filename === filename);
+}
+
+document.getElementById('nextButton').addEventListener('click', async function () {
     if (jsonFiles.length > 0) {
+        const filename = jsonFiles[currentIndex];
+        // 查表：如果没有反馈，自动提交“无问题”
+        if (!(await hasFeedback(filename))) {
+            fetch('/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename, problem: '无问题' })
+            });
+        }
         currentIndex = (currentIndex + 1) % jsonFiles.length;
         loadJsonFile(currentIndex);
     }
@@ -325,13 +340,20 @@ function updateNextButton() {
 }
 
 function loadCurrentFileProblems() {
-    const filename = jsonFiles && jsonFiles.length > 0 ? jsonFiles[currentIndex] : '';
+    // 只取文件名部分，保证和反馈表一致
+    let filename = jsonFiles && jsonFiles.length > 0 ? jsonFiles[currentIndex] : '';
+    filename = filename.split('/').pop();
     fetch(`/get-problems/${filename}`)
         .then(res => res.json())
         .then(data => {
             const list = document.getElementById('problemList');
             if (data && data.length > 0) {
-                list.innerHTML = data.map(item => `<div style="margin-bottom:8px;">• ${escapeHtml(item)}</div>`).join('');
+                list.innerHTML = data.map(item => `
+                    <div style="margin-bottom:8px;display:flex;align-items:center;">
+                        <span style="flex:1;">• ${escapeHtml(item)}</span>
+                        <button class="delete-problem-btn" data-filename="${encodeURIComponent(filename)}" data-problem="${encodeURIComponent(item)}" style="margin-left:8px;">删除</button>
+                    </div>
+                `).join('');
             } else {
                 list.innerHTML = '<div style="color:#aaa;">暂无问题</div>';
             }
@@ -339,3 +361,25 @@ function loadCurrentFileProblems() {
 }
 // 鼠标移入时加载
 document.getElementById('problemSidebar').addEventListener('mouseenter', loadCurrentFileProblems);
+
+document.getElementById('problemList').onclick = function(e) {
+    if (e.target.classList.contains('delete-problem-btn')) {
+        const filename = decodeURIComponent(e.target.getAttribute('data-filename'));
+        const problem = decodeURIComponent(e.target.getAttribute('data-problem'));
+        if (confirm('确定要删除这条反馈吗？')) {
+            fetch('/delete-feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename, problem })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    loadCurrentFileProblems(); // 删除后刷新
+                } else {
+                    alert('删除失败');
+                }
+            });
+        }
+    }
+};
