@@ -1,53 +1,58 @@
-# Huayun_data
-=======
 # 数据校验工具
 
-这是一个基于Flask框架开发的数据校验和展示工具，主要用于处理和展示PDF文档、JSON数据以及资源文件。
+这是一个基于 Flask 框架开发的**数据校验与反馈工具**，主要用于批量校验 JSON 文件、展示 PDF 文档、收集和导出用户反馈。适用于数据标注、内容审核等场景。
 
 ## 项目结构
 
 ```
-├── app/                    # 应用主目录
-│   ├── data_show.py       # PDF文档展示模块
-│   ├── json_process.py    # JSON数据处理模块
-│   └── res_collection.py  # 资源文件管理模块
-├── static/                # 静态资源文件
-├── templates/             # HTML模板文件
-├── data/                  # 数据存储目录
-├── app.py                 # 应用入口文件
-├── config.py             # 配置文件
-└── function_tool.py      # 功能工具模块
+├── app/                    # 后端主目录
+│   ├── data_show.py        # PDF文档展示接口
+│   ├── json_process.py     # JSON数据处理与校验接口
+│   └── res_collection.py   # 反馈收集与导出接口
+├── static/                 # 前端静态资源（JS/CSS/图片）
+│   └── js/
+│       └── view_pdf.js     # 前端主逻辑脚本
+├── templates/              # HTML模板
+├── data/                   # 数据存储目录
+│   ├── feedback.xlsx       # 用户反馈Excel
+│   └── True1/              # 需校验的JSON文件目录
+├── app.py                  # 应用入口
+├── config.py               # 配置文件
+└── requirements.txt        # 依赖包
 ```
 
 ## 主要功能
 
 1. **PDF文档展示**
-   - 支持PDF文件的在线预览
-   - 按文件夹组织PDF文件
-   - 提供友好的PDF查看界面
+   - 支持在线预览PDF文件
+   - 按文件夹分类浏览
 
-2. **JSON数据处理**
-   - JSON数据的解析和验证
-   - 数据格式转换
-   - 数据可视化展示
+2. **JSON数据校验与反馈**
+   - 自动检测JSON内容中的标签闭合等问题
+   - 支持人工反馈问题（如内容错误、格式问题等）
+   - 每个JSON文件可多次反馈不同问题
 
-3. **资源文件管理**
-   - 资源文件的收集和整理
-   - 文件分类管理
-   - 资源访问控制
+3. **侧边栏问题查看与删除**
+   - 实时显示当前JSON文件的所有反馈问题
+   - 支持一键删除单条反馈
+
+4. **反馈导出**
+   - 支持导出所有反馈为Excel
+   - 同一文件的多条问题自动合并为一行（以换行分隔）
+   - 未被反馈的文件自动标记为“未查看”
 
 ## 技术栈
 
-- 后端框架：Flask
-- 前端技术：HTML, CSS, JavaScript
-- 数据存储：文件系统
-- 开发语言：Python
+- 后端：Flask
+- 前端：HTML、CSS、JavaScript
+- 数据存储：文件系统（Excel、JSON）
+- 依赖：openpyxl、filelock 等
 
 ## 运行环境要求
 
 - Python 3.6+
 - Flask
-- 其他依赖包（详见requirements.txt）
+- 依赖包见 requirements.txt
 
 ## 安装和运行
 
@@ -56,38 +61,38 @@
    ```bash
    pip install -r requirements.txt
    ```
-3. 运行应用：
+3. 启动服务：
    ```bash
    python app.py
    ```
-4. 访问地址：http://localhost:5002
+4. 浏览器访问 [http://localhost:5002](http://localhost:5002)
 
 ## 配置说明
 
-在`config.py`中可以配置以下参数：
-- PDF文件根目录
-- 服务器端口
-- 其他应用配置
+- `config.py` 可配置 PDF/JSON 根目录、端口等参数
+- 需将待校验的 JSON 文件放在 `data/True1/` 目录下
 
 ## 使用说明
 
-1. PDF查看：
-   - 访问首页即可查看PDF文件列表
-   - 点击文件名即可在线预览
+1. **PDF/JSON浏览**  
+   - 首页选择文件夹和文件，支持PDF预览和JSON内容查看
 
-2. JSON处理：
-   - 上传JSON文件进行处理
-   - 查看处理结果和可视化展示
+2. **问题反馈**  
+   - 可对每个JSON文件提交问题反馈
+   - 支持侧边栏查看和删除反馈
 
-3. 资源管理：
-   - 上传和管理资源文件
-   - 按类别组织文件
+3. **自动校验**  
+   - 系统自动检测标签闭合等基础问题，发现问题自动记录反馈
+
+4. **反馈导出**  
+   - 点击“导出反馈”可下载所有反馈Excel，未反馈文件自动标记为“未查看”
 
 ## 注意事项
 
-- 请确保有足够的磁盘空间存储PDF和资源文件
-- 建议定期备份重要数据
-- 注意文件访问权限的设置
+- 请确保 `data/True1/` 目录下有待校验的JSON文件
+- 反馈数据保存在 `data/feedback.xlsx`，建议定期备份
+- 若有权限或端口问题，请检查 config.py 配置
 
+---
 
-![](https://minio-file.hwzxs.com/data-overnance/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE%202025-03-28%20201518.png)
+如需二次开发或功能扩展，请参考 `app/` 目录下各模块源码。
