@@ -1,5 +1,6 @@
 data/
 pdf/
+dist/
 __pycache__/
 .idea/
 *.pyc
