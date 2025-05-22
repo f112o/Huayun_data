@@ -1,0 +1,7 @@
+data/
+pdf/
+dist/
+build/
+__pycache__/
+.idea/
+*.pyc

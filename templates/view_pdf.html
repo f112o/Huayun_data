@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>查看 PDF 和 JSON</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/view_pdf.css') }}">    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+
+</head>
+<body>
+    <div class="sidebar">
+        <div class="dropdowns">
+            <select id="folderDropdown">
+                <option value="">请选择文件夹</option>
+            </select>
+            <select id="fileDropdown" disabled>
+                <option value="">请选择文件</option>
+            </select>
+        </div>
+        <div class="token-info" id="tokenInfo">Token 数量: 未知</div>
+        <div class="json-viewer" id="jsonContent">请选择 JSON 文件以查看内容</div>
+        <div class="controls">
+            <button id="prevButton">上一个 JSON</button>
+            <button id="nextButton">下一个 JSON</button>
+            <button id="feedbackButton">问题反馈</button>
+            <button id="exportButton">导出反馈</button>
+        </div>
+    </div>
+    
+    <!-- 用于显示 feedback.xlsx 内容的弹窗 -->
+    <div id="exportModal" style="display: none; position: fixed; top: 20%; left: 10%; width: 1000px; background-color: #e6f8f8; padding: 20px; border: 1px solid #ccc; z-index: 9999;">
+        <div style="margin-bottom: 10px; font-weight: bold;">反馈内容列表</div>
+        <div id="feedbackTable" style="max-height: 300px; overflow-y: auto; border: 1px solid #999;"></div>
+        <div style="margin-top: 10px; text-align: center;">
+            <button id="downloadFeedback">下载反馈表</button>
+            <button id="closeExportModal">关闭</button>
+        </div>
+    </div>
+    
+    <!-- 隐藏的反馈弹窗 -->
+    <div id="feedbackModal" class="animate__animated"  style="display: none; position: fixed; top: 30%; left: 30%; background-color: #d9ebdc; padding: 20px; border: 1px solid #ccc;">
+        <label>文件名:</label>
+        <input type="text" id="feedbackFilename" readonly />
+        <br><br>
+        <label>问题描述:</label>
+        <br>
+        <textarea id="feedbackProblem" rows="4" cols="30"></textarea>
+        <br><br>
+        <button id="feedbackConfirm">确认</button>
+        <button id="feedbackCancel">取消</button>
+    </div>
+
+    <!-- 右侧 PDF 显示容器（iframe方式） -->
+    <div id="pdfContainer">
+        <iframe id="pdfIframe" src=""></iframe>
+    </div>
+
+    <div id="problemSidebar">
+        <div id="problemListTitle">当前文件问题</div>
+        <div id="problemList"></div>
+    </div>
+    <script src="{{ url_for('static', filename='js/view_pdf.js') }}"></script>
+</body>
+</html>
